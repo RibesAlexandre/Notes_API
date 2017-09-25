@@ -2,18 +2,15 @@
 require "flight/Flight.php"; 
 require "autoload.php";
 
+//Enregistrer en global dans Flight le BddManager
+Flight::set("BddManager", new BddManager());
+
 //Lire toutes les notes
 Flight::route("GET /notes", function(){
 
-    $pdo = Connection::getConnection();
-    $query = "SELECT * FROM notes";
-    $result = $pdo->query( $query );
-    $result = $result->fetchAll(PDO::FETCH_ASSOC); //Tableau associatif
-
-    $notes = [];
-    foreach( $result as $datas ){
-        $notes[] = new Note( $datas );
-    }
+    $bddManager = Flight::get("BddManager");
+    $repo = $bddManager->getNoteRepository();
+    $notes = $repo->getAll();
 
     echo json_encode ( $notes );
 
