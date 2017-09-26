@@ -16,4 +16,38 @@ class NoteRepository extends Repository {
 
     }
 
+    function save( Note $note ){
+        if( empty( $note->id ) ){
+            return $this->insert( $note );
+        }
+        else {
+            return $this->update( $note );
+        }
+    }
+
+    private function insert( Note $note ){
+
+        $query = "INSERT INTO notes SET title=:title, content=:content";
+        $prep = $this->connection->prepare( $query );
+        $prep->execute( [
+            "title" => $note->getTitle(),
+            "content" => $note->getContent()
+        ] );
+        return $this->connection->lastInsertId();
+
+    }
+
+    private function update( Note $note ){
+
+        $query = "UPDATE notes SET title=:title, content=:content WHERE id=:id";
+        $prep = $this->connection->prepare( $query );
+        $prep->execute( [
+            "title" => $note->getTitle(),
+            "content" => $note->getContent(),
+            "id" => $note->getId()
+        ] );
+        return $prep->rowCount();
+
+    }
+
 }
