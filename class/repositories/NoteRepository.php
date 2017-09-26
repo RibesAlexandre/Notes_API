@@ -2,7 +2,6 @@
 class NoteRepository extends Repository {
 
     function getAll(){
-
         $query = "SELECT * FROM notes";
         $result = $this->connection->query( $query );
         $result = $result->fetchAll( PDO::FETCH_ASSOC );
@@ -13,7 +12,24 @@ class NoteRepository extends Repository {
         }
 
         return $notes;  
+    }
 
+    function getById( Note $note ){
+
+        $query = "SELECT * FROM notes WHERE id=:id";
+        $prep = $this->connection->prepare( $query );
+        $prep->execute([
+            "id" => $note->getId()
+        ]);
+        $result = $prep->fetch(PDO::FETCH_ASSOC);
+
+        if( empty( $result ) ){
+            return false;
+        }
+        else {
+            return new Note( $result );
+        }
+        
     }
 
     function save( Note $note ){

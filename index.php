@@ -19,6 +19,25 @@ Flight::route("GET /notes", function(){
 //Récuperer la note @id
 Flight::route("GET /note/@id", function( $id ){
     
+    $status = [
+        "success" => false,
+        "note" => false
+    ];
+
+    $note = new Note();
+    $note->setId( $id );
+
+    $bddManager = Flight::get("BddManager");
+    $repo = $bddManager->getNoteRepository();
+    $note = $repo->getById( $note );
+
+    if( $note != false ){
+        $status["success"] = true;
+        $status["note"] = $note;
+    }
+
+    echo json_encode( $status );
+
 });
 
 //Créer une note
