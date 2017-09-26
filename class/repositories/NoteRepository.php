@@ -17,7 +17,7 @@ class NoteRepository extends Repository {
     }
 
     function save( Note $note ){
-        if( empty( $note->id ) ){
+        if( empty( $note->getId() ) ){
             return $this->insert( $note );
         }
         else {
@@ -46,6 +46,17 @@ class NoteRepository extends Repository {
             "content" => $note->getContent(),
             "id" => $note->getId()
         ] );
+        return $prep->rowCount();
+
+    }
+
+    function delete( Note $note ) {
+
+        $query = "DELETE FROM notes WHERE id=:id";
+        $prep = $this->connection->prepare( $query );
+        $prep->execute([
+            "id" => $note->getId()
+        ]);
         return $prep->rowCount();
 
     }

@@ -55,6 +55,23 @@ Flight::route("POST /note", function(){
 
 //Supprimer la note @id
 Flight::route("DELETE /note/@id", function( $id ){
+
+    $status = [
+        "success" => false
+    ];
+
+    $note = new Note();
+    $note->setId( $id );
+
+    $bddManager = Flight::get("BddManager");
+    $repo = $bddManager->getNoteRepository();
+    $rowCount = $repo->delete( $note );
+
+    if( $rowCount == 1 ){
+        $status["success"] = true;
+    }
+
+    echo json_encode( $status );
     
 });
 
