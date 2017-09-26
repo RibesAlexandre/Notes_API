@@ -94,4 +94,39 @@ Flight::route("DELETE /note/@id", function( $id ){
     
 });
 
+Flight::route("PUT /note/@id", function( $id ){
+
+    //Pour récuperer des données PUT -> les données sont encodé en json string
+    //avec ajax, puis décodé ici en php
+    $json = Flight::request()->getBody();
+    $_PUT = json_decode( $json , true);//true pour tableau associatif
+
+    $status = [
+        "success" => false
+    ];
+
+    if( isset( $_PUT["title"] ) && isset( $_PUT["content"] ) ){
+
+        $title = $_PUT["title"];
+        $content = $_PUT["content"];
+
+        $note = new Note();
+        $note->setId( $id );
+        $note->setTitle( $title );
+        $note->setContent( $content );
+
+        $bddManager = Flight::get("BddManager");
+        $repo = $bddManager->getNoteRepository();
+        $rowCount = $repo->save( $note );
+
+        if( $rowCount == 1 ){
+            $status["success"] = true;
+        }
+
+    }
+
+    echo json_encode( $status );
+
+});
+
 Flight::start();
