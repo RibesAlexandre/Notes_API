@@ -1,7 +1,10 @@
 <?php 
 class NoteRepository extends Repository {
 
-    function getAll(){
+    /**
+     * @return array
+     */
+    public function getAll(){
         $query = "SELECT * FROM notes";
         $result = $this->connection->query( $query );
         $result = $result->fetchAll( PDO::FETCH_ASSOC );
@@ -14,7 +17,11 @@ class NoteRepository extends Repository {
         return $notes;  
     }
 
-    function getById( Note $note ){
+    /**
+     * @param Note $note
+     * @return bool|Note
+     */
+    public function getById( Note $note ){
 
         $query = "SELECT * FROM notes WHERE id=:id";
         $prep = $this->connection->prepare( $query );
@@ -29,10 +36,33 @@ class NoteRepository extends Repository {
         else {
             return new Note( $result );
         }
-        
     }
 
-    function save( Note $note ){
+    /**
+     * @param User $user
+     * @return array
+     */
+    public function getByUserId( User $user ) {
+        $query = "SELECT * FROM notes WHERE user_id=:user_id";
+        $prep = $this->connection->prepare( $query );
+        $prep->execute([
+            'user_id'   =>  $user->getId(),
+        ]);
+        $result = $prep->fetchAll( PDO::FETCH_ASSOC );
+
+        $notes = [];
+        foreach( $result as $data ){
+            $notes[] = new Note( $data );
+        }
+
+        return $notes;
+    }
+
+    /**
+     * @param Note $note
+     * @return mixed
+     */
+    public function save( Note $note ){
         if( empty( $note->getId() ) ){
             return $this->insert( $note );
         }
@@ -41,31 +71,43 @@ class NoteRepository extends Repository {
         }
     }
 
+    /**
+     * @param Note $note
+     * @return mixed
+     */
     private function insert( Note $note ){
 
-        $query = "INSERT INTO notes SET title=:title, content=:content";
+        $query = "INSERT INTO notes SET title=:title, content=:content, user_id=:user_id";
         $prep = $this->connection->prepare( $query );
-        $prep->execute( [
-            "title" => $note->getTitle(),
-            "content" => $note->getContent()
-        ] );
+        $prep->execute([
+            "title"     => $note->getTitle(),
+            "content"   => $note->getContent(),
+            "user_id"   => $note->getUserId()
+        ]);
         return $this->connection->lastInsertId();
-
     }
 
+    /**
+     * @param Note $note
+     * @return mixed
+     */
     private function update( Note $note ){
 
         $query = "UPDATE notes SET title=:title, content=:content WHERE id=:id";
         $prep = $this->connection->prepare( $query );
-        $prep->execute( [
-            "title" => $note->getTitle(),
-            "content" => $note->getContent(),
-            "id" => $note->getId()
-        ] );
+        $prep->execute([
+            "id"            => $note->getId(),
+            "title"         => $note->getTitle(),
+            "content"       => $note->getContent()
+        ]);
         return $prep->rowCount();
 
     }
 
+    /**
+     * @param Note $note
+     * @return mixed
+     */
     function delete( Note $note ) {
 
         $query = "DELETE FROM notes WHERE id=:id";

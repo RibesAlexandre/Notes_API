@@ -40,6 +40,31 @@ Flight::route("GET /note/@id", function( $id ){
 
 });
 
+/**
+ * Notes par utilisateur
+ */
+Flight::route('GET /user/@id', function($id) {
+
+    $user = new User();
+    $user->setId($id);
+
+    $bddManager = Flight::get("BddManager");
+    $repo = $bddManager->getNoteRepository();
+    $notes = $repo->getByUserId($user);
+
+    if( !$notes ) {
+        return json_encode([
+            'success'   =>  false
+        ]);
+    }
+
+    return json_encode([
+        'success'   =>  true,
+        'notes'     =>  $notes,
+    ]);
+
+});
+
 //Créer une note
 Flight::route("POST /note", function(){
 
@@ -126,6 +151,76 @@ Flight::route("PUT /note/@id", function( $id ){
     }
 
     echo json_encode( $status );
+
+});
+
+/**
+ * Traitement de la requête de connexion
+ */
+Flight::route('POST /connexion', function() {
+    $json = Flight::request()->getBody();
+    $inputs = json_decode( $json , true);
+
+    if( isset($inputs['email']) && isset($inputs['password']) ) {
+        $bddManager = Flight::get("BddManager");
+        $repo = $bddManager->getUserRepository();
+
+        if( $repo->login($inputs['email'], $inputs['password']) ) {
+            return json_encode([
+                'success'   =>  true
+            ]);
+        }
+
+        return json_encode([
+            'success'   =>  false,
+        ]);
+    }
+
+    return json_encode([
+        'success'   =>  false,
+    ]);
+});
+
+/**
+ * Traitement de la requête d'inscription
+ */
+Flight::Route('POST /inscription', function() {
+    $json = Flight::request()->getBody();
+    $inputs = json_decode( $json , true);
+
+    $error = false;
+    foreach( $inputs as $key => $value ) {
+        if( !isset($inputs[$key]) ) {
+            $error = true;
+        }
+    }
+
+    if( !$error ) {
+        $bddManager = Flight::get("BddManager");
+        $repo = $bddManager->getUserRepository();
+
+        $user = new User();
+        $user->setEmail($inputs['email']);
+        $user->setFirstName($inputs['firstname']);
+        $user->setLastName($inputs['lastname']);
+        $user->setPassword($inputs['password']);
+
+        $rowCount = $repo->save();
+        if( $rowCount ) {
+            return json_encode([
+                'success'   =>  true,
+                'firstname' =>  $user->getFirstName(),
+            ]);
+        }
+
+        return json_encode([
+            'success'   =>  false
+        ]);
+    }
+
+    return json_encode([
+        'success'   =>  false
+    ]);
 
 });
 

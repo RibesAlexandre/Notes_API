@@ -2,16 +2,31 @@
 //BddManager va contenir les instances de nos repository
 class BddManager {
 
-    private $noteRepository;
     private $connection;
+    private $noteRepository;
+    private $userRepository;
 
-    function __construct(){
+    /**
+     * BddManager constructor.
+     */
+    public function __construct(){
         $this->connection = Connection::getConnection();
         $this->noteRepository = new NoteRepository( $this->connection );
+        $this->userRepository = new UserRepository( $this->connection );
     }
 
-    function getNoteRepository(){
+    /**
+     * @return NoteRepository
+     */
+    public function getNoteRepository(){
         return $this->noteRepository;
+    }
+
+    /**
+     * @return UserRepository
+     */
+    public function getUserRepository() {
+        return $this->userRepository;
     }
 
 }
